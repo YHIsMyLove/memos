@@ -1,5 +1,11 @@
 
-import { exists, BaseDirectory, create, readTextFile, readDir, writeTextFile, remove, mkdir } from "@tauri-apps/plugin-fs";
+import { path } from "@tauri-apps/api";
+import { exists, BaseDirectory, create, readTextFile, readDir, writeTextFile, remove, mkdir, type DirEntry } from "@tauri-apps/plugin-fs";
+
+export interface DirEntryEx extends DirEntry {
+    children?: Array<DirEntryEx>
+}
+
 export class FileHelper {
     static dirName(file: string) {
         return file.split("/").slice(0, -1).join("/")
@@ -37,7 +43,24 @@ export class FileHelper {
     static async readFile(file: string) {
         return await readTextFile(file, { baseDir: BaseDirectory.AppData })
     }
-    static async getFiles(dir: string) {
-        return await readDir(dir, { baseDir: BaseDirectory.AppData })
+
+    static async getFiles(dir: string, recursive: boolean = false) {
+        const hasDir = await FileHelper.fileExists(dir)
+        if (!hasDir) return []
+        const dirs: Array<DirEntryEx> = await readDir(dir, { baseDir: BaseDirectory.AppData })
+        if (recursive) {
+            let promises = []
+            for (let index = 0; index < dirs.length; index++) {
+                const dirInfo = dirs[index];
+                if (dirInfo.isDirectory) {
+                    dirInfo.children = []
+                    const appDataDirPath = await path.appDataDir();
+                    const fullDir = await path.join(appDataDirPath, dir, dirInfo.name)
+                    const children = await FileHelper.getFiles(fullDir, recursive)
+                    dirInfo.children.push(...children)
+                }
+            }
+        }
+        return dirs
     }
 }
