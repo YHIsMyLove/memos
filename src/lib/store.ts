@@ -1,6 +1,7 @@
 import { format } from 'date-fns';
 import { writable } from 'svelte/store';
 import type { NoteBlock, NoteStatistics, Tag } from './types';
+import { FileHelper } from './fileHelper';
 
 function extractTags(content: string): string[] {
   const tagRegex = /#(\w+)/g;
@@ -22,45 +23,47 @@ function createNoteStore() {
    */
   async function fetchNotes(date?: Date) {
     const dateObj = date || new Date()
-    try {
-      const response = await fetch(`http://localhost:3000/notes?date=${dateObj.toLocaleDateString('en-CA')}`);//
-      const note = await response.json();
-      set(note);
-    } catch (error) {
-      set([])
+    const dir = `DailyNote/${format(dateObj, 'yyyy-MM-dd')}/${format(dateObj, 'MM-dd')}`
+    const files = await FileHelper.getFiles(dir);
+    // 将文件内容解析为笔记对象
+    const notes = []
+    for (let index = 0; index < files.length; index++) {
+      const file = files[index];
+      const id = `${dir}/${file.name}`
+      const content = await FileHelper.readFile(id);
+      const note: NoteBlock = {
+        id: id,
+        content,
+        tags: [],
+        createdAt: new Date(),
+      };
+      notes.push(note);
     }
+    set(notes)
   }
 
   return {
     subscribe,
+    /**
+     * 添加笔记
+     * @param content 笔记内容
+     */
     addNote: async (content: string) => {
-      const extractedTags = extractTags(content);
-      const todayTag = format(new Date(), 'yyyy-MM-dd');
-      const tags = [...new Set([...extractedTags, todayTag])];
-
-      const response = await fetch('http://localhost:3000/notes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content, tags })
-      });
-
-      if (response.ok) {
-        const newNote = await response.json();
-        update(notes => [...notes, newNote]);
-        await fetchNotes()
-        // 刷新日历
-        await statistics.countNotesByMonth()
-      }
+      // const extractedTags = extractTags(content);
+      // const todayTag = format(new Date(), 'yyyy-MM-dd');
+      // const tags = [...new Set([...extractedTags, todayTag])];
+      // 以日期为文件名，将笔记内容保存到文件中,年份为顶级目录月份中级目录，日期+时间为文件名
+      const today = new Date();
+      const file = `DailyNote/${format(today, 'yyyy-MM-dd')}/${format(today, 'MM-dd')}/${format(today, 'MM-dd_HH_mm_ss')}.txt`;
+      await FileHelper.createFile(file, content);
     },
+    /**
+     * 删除笔记
+     * @param id 笔记id
+     */
     deleteNote: async (id: string) => {
-      const response = await fetch(`http://localhost:3000/notes/${id}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        update(notes => notes.filter(note => note.id !== id));
-        await fetchNotes()
-      }
+      await FileHelper.deleteFile(id);
+      update(notes => notes.filter(note => note.id !== id));
     },
     fetchNotes,
   };
@@ -73,15 +76,16 @@ function createNoteStore() {
 function noteStatistics() {
   const { subscribe, set } = writable<NoteStatistics[]>([]);
   async function countNotesByMonth(date?: Date) {
-    // 生成一个数组，当月所有的日期
     const dateObj = date || new Date()
     const firstDayOfMonth = new Date(dateObj.getFullYear(), dateObj.getMonth(), 1);
     const lastDayOfMonth = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0);
     const dates = [];
     for (let day = firstDayOfMonth; day <= lastDayOfMonth; day.setDate(day.getDate() + 1)) {
+      const dir = `DailyNote/${format(day, 'yyyy-MM-dd')}/${format(day, 'MM-dd')}`
+      const files = await FileHelper.getFiles(dir);
       dates.push({
         date: day,
-        count: Math.random() * 10
+        count: files.length
       });
     }
     set(dates);
@@ -92,9 +96,11 @@ function noteStatistics() {
     const lastDayOfWeek = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate() + (6 - dateObj.getDay()));
     const dates = [];
     for (let day = firstDayOfWeek; day <= lastDayOfWeek; day.setDate(day.getDate() + 1)) {
+      const dir = `DailyNote/${format(day, 'yyyy-MM-dd')}/${format(day, 'MM-dd')}`
+      const files = await FileHelper.getFiles(dir);
       dates.push({
         date: day,
-        count: Math.random() * 10
+        count: files.length
       })
     }
     set(dates);
@@ -138,13 +144,13 @@ export let globalCurrentDate = writable(new Date());
  */
 export let globalCurrentDay = writable(new Date());
 // Initialize data
-// notes.fetchNotes();
+notes.fetchNotes();
 // tags.fetchTags();
 
 globalCurrentDay.subscribe(date => {
-  // notes.fetchNotes(date);
+  notes.fetchNotes(date);
 })
 globalCurrentDate.subscribe(date => {
-  // notes.fetchNotes(date);
+  notes.fetchNotes(date);
   statistics.countNotesByMonth(date);
 })
