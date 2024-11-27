@@ -2,6 +2,8 @@ import { format } from 'date-fns';
 import { writable } from 'svelte/store';
 import type { NoteBlock, NoteStatistics, Tag } from './types';
 import { FileHelper } from './fileHelper';
+const isWeb = typeof window !== 'undefined';
+console.log(isWeb)
 
 function extractTags(content: string): string[] {
   const tagRegex = /#(\w+)/g;
@@ -24,8 +26,7 @@ function createNoteStore() {
   async function fetchNotes(date?: Date) {
     const dateObj = date || new Date()
     const dir = `DailyNote/${format(dateObj, 'yyyy-MM-dd')}/${format(dateObj, 'MM-dd')}`
-    const files = await FileHelper.getFiles(dir);
-    // 将文件内容解析为笔记对象
+    const files = isWeb ? [] : await FileHelper.getFiles(dir);
     const notes = []
     for (let index = 0; index < files.length; index++) {
       const file = files[index];
@@ -55,7 +56,10 @@ function createNoteStore() {
       // 以日期为文件名，将笔记内容保存到文件中,年份为顶级目录月份中级目录，日期+时间为文件名
       const today = new Date();
       const file = `DailyNote/${format(today, 'yyyy-MM-dd')}/${format(today, 'MM-dd')}/${format(today, 'MM-dd_HH_mm_ss')}.txt`;
-      await FileHelper.createFile(file, content);
+      if(isWeb){
+      }else{
+        await FileHelper.createFile(file, content);
+      }
     },
     /**
      * 删除笔记
@@ -82,10 +86,10 @@ function noteStatistics() {
     const dates = [];
     for (let day = firstDayOfMonth; day <= lastDayOfMonth; day.setDate(day.getDate() + 1)) {
       const dir = `DailyNote/${format(day, 'yyyy-MM-dd')}/${format(day, 'MM-dd')}`
-      const files = await FileHelper.getFiles(dir);
+      const files = isWeb ? Math.floor(Math.random() * 10) : (await FileHelper.getFiles(dir)).length;
       dates.push({
         date: day,
-        count: files.length
+        count: files
       });
     }
     set(dates);
@@ -97,10 +101,10 @@ function noteStatistics() {
     const dates = [];
     for (let day = firstDayOfWeek; day <= lastDayOfWeek; day.setDate(day.getDate() + 1)) {
       const dir = `DailyNote/${format(day, 'yyyy-MM-dd')}/${format(day, 'MM-dd')}`
-      const files = await FileHelper.getFiles(dir);
+      const files = isWeb ? Math.floor(Math.random() * 10) : (await FileHelper.getFiles(dir)).length;
       dates.push({
         date: day,
-        count: files.length
+        count: files
       })
     }
     set(dates);

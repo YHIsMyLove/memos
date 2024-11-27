@@ -1,37 +1,49 @@
 <script lang="ts">
-  import { notes } from "$lib/store";
+  import Router from "svelte-spa-router";
+  import routes from "./routes";
+  import { onMount } from "svelte";
   import "../app.css";
   import GithubCalendar from "../components/GithubCalendar.svelte";
-  import NoteBlock from "../components/NoteBlock.svelte";
-  import NoteEditor from "../components/NoteEditor.svelte";
+  import Header from "../components/Header.svelte";
+  import Navbar from "../components/Navbar.svelte";
+  import Popup from "../components/Popup.svelte";
+  import QuickAdd from "../components/QuickAdd.svelte";
+  let eventTarget: EventTarget;
+  onMount(() => {
+    eventTarget = new EventTarget();
+    eventTarget.addEventListener("CustomEvent", handleCustomEvent);
+  });
+  let isOpen = false;
+  function handleCustomEvent(event: any) {
+    const code = event.detail;
+    console.log("get msg ", code);
+    if (code === "add") {
+      isOpen = true;
+    } else if (code === "closePop") {
+      isOpen = false;
+    } else {
+      // 跳转页面
+      location.href = code;
+    }
+  }
 </script>
 
-<div
-  class="h-full bg-primary overflow-hidden flex flex-col items-center justify-start"
->
-  <div class=" px-4 w-full">
-    <div
-      class=" flex flex-row items-center justify-between align-middle py-4 text-primary-content"
-    >
-      <h1 class="text-2xl font-bold">MemOS</h1>
-      <div class="drawer-content flex flex-row [&_label]:px-1">
-        <label
-          class="drawer-button btn-primary text-secondary-content"
-          for="my-drawer">重组</label
-        >
-        <label
-          class="drawer-button btn-primary text-secondary-content"
-          for="my-drawer">设置</label
-        >
-      </div>
+<div class=" relative h-full w-full">
+  <div
+    class="h-full bg-primary overflow-hidden flex flex-col items-center justify-start absolute w-full"
+  >
+    <div class=" px-4 w-full">
+      <Header />
+      <GithubCalendar />
     </div>
-    <GithubCalendar />
-    <NoteEditor />
+    <div class=" px-4 w-full overflow-y-auto text-primary-content">
+      <Router {routes} />
+    </div>
   </div>
-  <div class=" px-4 w-full overflow-y-auto">
-    {#each $notes as note (note.id)}
-      <NoteBlock {note} />
-    {/each}
-    <div class="h-6 p-4 mb-4"></div>
-  </div>
+  <Navbar {eventTarget} />
+  {#if isOpen}
+    <Popup {eventTarget}>
+      <QuickAdd></QuickAdd>
+    </Popup>
+  {/if}
 </div>

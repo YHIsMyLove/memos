@@ -48,9 +48,9 @@
     });
 </script>
 
-<div class=" flex flex-row mb-2">
+<div class=" flex flex-row mb-2 flex-nowrap">
     <div
-        class="p-1 text-primary-content flex flex-col justify-center items-center"
+        class="p-1 text-primary-content flex flex-col justify-center items-center flex-nowrap"
     >
         <div class="flex justify-center items-center mb-2 w-full">
             <button
@@ -86,21 +86,28 @@
         class=" flex-1
         flex
         flex-col
-        justify-between items-start p-4 m-2"
+        flex-nowrap
+        justify-between items-start"
     >
-        <div class=" flex flex-col">
+        <div class=" flex flex-col flex-nowrap">
             <p class="font-bold text-base text-primary-content">
-                倒数日 · 10天
+                倒数日xxx · 10天
             </p>
-            <p class="font-bold text-xs text-secondary-content">xxxx纪念日</p>
+            <p class="font-bold text-xs text-secondary-content">
+                xxxx纪念日 | 2024年11月12日
+            </p>
         </div>
-        <div class=" flex flex-col">
+        <div class=" flex flex-col flex-nowrap">
             <p class="font-bold text-base text-primary-content">国庆 · 250天</p>
-            <p class="font-bold text-xs text-secondary-content">xxxx纪念日</p>
+            <p class="font-bold text-xs text-secondary-content">
+                xxxx纪念日 | 2024年11月12日
+            </p>
         </div>
-        <div class=" flex flex-col">
+        <div class=" flex flex-col flex-nowrap">
             <p class="font-bold text-base text-primary-content">国庆 · 250天</p>
-            <p class="font-bold text-xs text-secondary-content">xxxx纪念日</p>
+            <p class="font-bold text-xs text-secondary-content">
+                xxxx纪念日 | 2024年11月12日
+            </p>
         </div>
         <a href="/" class="text-xs text-info-content mt-2">查看更多</a>
     </div>

@@ -16,7 +16,7 @@ export interface NoteStatistics {
   count: number;
 }
 
-export interface WebdavSettings{
+export interface WebdavSettings {
   url: string;
   username: string;
   password: string;
