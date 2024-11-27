@@ -36,7 +36,7 @@
         </button>
         <!-- svelte-ignore a11y_consider_explicit_label -->
         <button
-            class="text-white flex justify-center items-center"
+            class="flex justify-center items-center"
             on:click={() => dispatchCustomEvent("/time")}
         >
             <svg

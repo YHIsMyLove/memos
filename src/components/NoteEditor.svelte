@@ -1,8 +1,8 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   // import { generateTags } from "../lib/openai";
-  import { notes } from "../lib/store";
   import TagAutocomplete from "./TagAutocomplete.svelte";
+  import { notes } from "$lib/stores/notes";
 
   let content = "";
   let textarea: HTMLTextAreaElement;
@@ -61,7 +61,7 @@
       content = "";
       tagAutocomplete.visible = false;
 
-      await notes.fetchNotes();
+      location.href = "/";
     }
   }
 
@@ -105,7 +105,7 @@
     bind:value={content}
     bind:this={textarea}
     on:input={handleInput}
-    class="w-full p-2 rounded-lg mb-2 outline-none text-primary-content bg-secondary h-16 transition-all resize-none"
+    class="w-full p-2 rounded-lg mb-2 outline-none text-primary-content bg-secondary h-64 transition-all resize-none"
     placeholder="开始记录吧...  输入 #tag 添加标签."
     on:focus={() => {
       dispatch("focus");

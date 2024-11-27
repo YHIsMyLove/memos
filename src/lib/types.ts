@@ -2,7 +2,7 @@ export interface NoteBlock {
   id: string;
   content: string;
   createdAt: Date;
-  tags: Tag[];
+  tags?: Tag[];
 }
 
 export interface Tag {

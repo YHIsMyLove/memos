@@ -1,8 +1,8 @@
 <script lang="ts">
   import { marked } from "marked";
   import type { NoteBlock } from "../lib/types";
-  import { notes } from "../lib/store";
   import { format } from "date-fns";
+  import { notes } from "$lib/stores/notes";
 
   export let note: NoteBlock;
 
@@ -18,11 +18,11 @@
   <div class="prose prose-xs max-w-none text-primary-content py-2">
     {@html htmlContent}
   </div>
-  <div class="flex gap-2">
+  <!-- <div class="flex gap-2">
     {#each note.tags as tag}
       <span class=" bg-info text-info-content text-xs px-2 rounded">
         #{tag.name}
       </span>
     {/each}
-  </div>
+  </div> -->
 </div>

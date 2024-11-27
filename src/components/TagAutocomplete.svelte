@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { tags } from "../lib/store";
+    import { tags } from "$lib/stores/tags";
   import { createEventDispatcher } from "svelte";
 
   export let query = "";

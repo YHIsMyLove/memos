@@ -1,10 +1,8 @@
 <script lang="ts">
+    import { globalCurrentDay } from "$lib/stores/date";
+    import { statistics } from "$lib/stores/statistics";
+    import { isSameDay } from "date-fns";
     import { onMount } from "svelte";
-    import {
-        globalCurrentDate,
-        globalCurrentDay,
-        statistics,
-    } from "../lib/store";
 
     let currentDate = new Date();
     onMount(() => {});
@@ -27,18 +25,15 @@
             currentDate.getMonth() + increment,
             1,
         );
-        globalCurrentDate.set(currentDate);
+        globalCurrentDay.set(currentDate);
     }
 
-    const today = new Date().toDateString();
     /**
      * 切换日期
      * @param index
      */
     function switchDate(index: number) {
         const current = $statistics[index];
-        console.log(current);
-        if (current.count === 0) return;
         globalCurrentDay.set(new Date(current.date));
     }
 
@@ -56,6 +51,7 @@
             <button
                 on:click={() => changeMonth(-1)}
                 class="px-2 cursor-pointer"
+                aria-label="Previous month"
             >
                 &lt;
             </button>
@@ -63,22 +59,28 @@
             <button
                 on:click={() => changeMonth(1)}
                 class=" px-2 cursor-pointer"
+                aria-label="Next month"
             >
                 &gt;
             </button>
         </div>
         <div class="flex flex-wrap max-w-44 justify-start items-center">
             {#each $statistics as item, index}
-                <!-- svelte-ignore a11y-click-events-have-key-events -->
-                <!-- svelte-ignore a11y-no-static-element-interactions -->
-                <div
-                    style="width: 1rem; height: 1rem; "
-                    class=" flex-shrink-0 h-3 rounded-sm
+                <button
+                    class=" flex-shrink-0 rounded-sm w-[1rem] h-[1rem] {isSameDay(
+                        new Date(),
+                        item.date,
+                    )
+                        ? 'shadow-md'
+                        : ''} {isSameDay($globalCurrentDay, item.date)
+                        ? 'border border-warning'
+                        : ''}
                     {getContributionLevel(item.count)} 
                     cursor-pointer transition-colors duration-200 hover:opacity-80 m-1"
                     title={`${item.count} contributions`}
+                    aria-label={`View contributions for day ${index + 1}: ${item.count} contributions`}
                     on:click={() => switchDate(index)}
-                ></div>
+                ></button>
             {/each}
         </div>
     </div>
@@ -94,19 +96,19 @@
                 倒数日xxx · 10天
             </p>
             <p class="font-bold text-xs text-secondary-content">
-                xxxx纪念日 | 2024年11月12日
+                xxxx纪念日 | 2024/11/12
             </p>
         </div>
         <div class=" flex flex-col flex-nowrap">
             <p class="font-bold text-base text-primary-content">国庆 · 250天</p>
             <p class="font-bold text-xs text-secondary-content">
-                xxxx纪念日 | 2024年11月12日
+                xxxx纪念日 | 2024/11/12
             </p>
         </div>
         <div class=" flex flex-col flex-nowrap">
             <p class="font-bold text-base text-primary-content">国庆 · 250天</p>
             <p class="font-bold text-xs text-secondary-content">
-                xxxx纪念日 | 2024年11月12日
+                xxxx纪念日 | 2024/11/12
             </p>
         </div>
         <a href="/" class="text-xs text-info-content mt-2">查看更多</a>
