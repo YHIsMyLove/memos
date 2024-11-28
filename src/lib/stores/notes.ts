@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 import type { NoteBlock } from '../types';
 import FileHelper from '../utils/FileHelper';
 
@@ -21,16 +21,19 @@ function createNoteStore() {
   async function fetchNotes(date?: Date) {
     try {
       const dateObj = date || new Date()
-      const dir = `DailyNote/${format(dateObj, 'yyyy-MM-dd')}/${format(dateObj, 'MM')}`
+      const day = format(dateObj, 'yyyy-MM-dd');
+      const dir = `DailyNote/${day}`
       const files = await FileHelper.listFiles(dir);
       if (!files) return
       const notes = await Promise.all(
         files.map(async (file) => {
-          const content = await FileHelper.readFile(file);
+          const content = await FileHelper.readFile(`${dir}/${file.name}`);
+          const timeString = `${day} ${file.name.replaceAll('_', ':').replace('.txt', '')}`
+          console.log(timeString)
           return {
-            id: file,
+            id: file.name,
             content,
-            createdAt: new Date()
+            createdAt: parse(timeString, 'yyyy-MM-dd HH:mm:ss', new Date()),
           };
         })
       );
@@ -41,43 +44,6 @@ function createNoteStore() {
     }
   }
 
-  // async function getAllNotes() {
-  //   const allNotes = [];
-  //   const rootDir = 'DailyNote';
-  //   const years = await FileHelper.listDirectories(rootDir);
-
-  //   for (const year of years) {
-  //     const months = await FileHelper.listDirectories(year);
-  //     for (const month of months) {
-  //       const files = await FileHelper.listFiles(month);
-  //       const monthNotes = await Promise.all(
-  //         files.map(async (file) => {
-  //           const content = await FileHelper.readFile(file);
-  //           return {
-  //             id: file,
-  //             content,
-  //             createdAt: new Date()
-  //           };
-  //         })
-  //       );
-  //       allNotes.push(...monthNotes);
-  //     }
-  //   }
-
-  //   return allNotes;
-  // }
-
-  // async function backupNotes() {
-  //   const allNotes = await getAllNotes();
-  //   return allNotes;
-  // }
-
-  // async function restoreFromBackup(backupData: any[]) {
-  //   for (const note of backupData) {
-  //     await addNote(note.content);
-  //   }
-  // }
-
   return {
     subscribe,
     /**
@@ -86,7 +52,7 @@ function createNoteStore() {
      */
     addNote: async (content: string) => {
       const today = new Date();
-      const file = `DailyNote/${format(today, 'yyyy-MM-dd')}/${format(today, 'MM')}/${format(today, 'dd_HH_mm_ss')}.txt`;
+      const file = `DailyNote/${format(today, 'yyyy-MM-dd')}/${format(today, 'HH_mm_ss')}.txt`;
       await FileHelper.createFile(file, content);
     },
 

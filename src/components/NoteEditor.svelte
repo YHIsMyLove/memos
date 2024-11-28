@@ -57,10 +57,9 @@
    */
   async function handleSubmit() {
     if (content.trim()) {
-      notes.addNote(content);
+      await notes.addNote(content);
       content = "";
       tagAutocomplete.visible = false;
-
       location.href = "/";
     }
   }

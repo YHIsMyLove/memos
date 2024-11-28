@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
-import { type WebDAVClient, createClient } from "webdav";
+import { createDAVClient, DAVClient, fetchOauthTokens, getBasicAuthHeaders } from 'tsdav';
 
 export interface WebDAVConfig {
     url: string;
@@ -9,7 +9,7 @@ export interface WebDAVConfig {
 }
 
 const WEBDAV_CONFIG_KEY = 'memos-webdav-config';
-let Client: WebDAVClient | null = null;
+let Client: DAVClient | null = null;
 
 function loadFromStorage(): WebDAVConfig {
     if (!browser) return { url: '', username: '', password: '' };
@@ -32,12 +32,15 @@ function saveToStorage(config: WebDAVConfig) {
 function createWebDAVStore() {
     const { subscribe, set, update } = writable<WebDAVConfig>(loadFromStorage());
 
-    function createWebdavClient(config: WebDAVConfig) {
-        Client = Client ?? createClient(config.url, {
-            username: config.username,
-            password: config.password
+    async function createWebdavClient(config: WebDAVConfig) {
+        Client = Client ?? new DAVClient({
+            serverUrl: config.url,
+            credentials: {
+                username: config.username,
+                password: config.password
+            }
         });
-
+        await Client.login();
     }
 
     return {
@@ -57,11 +60,11 @@ function createWebDAVStore() {
             }
             try {
                 createWebdavClient(config);
-                console.log(Client);
-                const directoryItems = await Client?.getDAVCompliance("/memos");
-                if (!directoryItems) {
-                    throw new Error('无法连接到WebDAV');
-                }
+                // const result = getBasicAuthHeaders({
+                //     username: config.username,
+                //     password: config.password,
+                // });
+                // console.log('result', result);
                 return true;
             } catch (error) {
                 console.error('WebDAV connection error:', error);

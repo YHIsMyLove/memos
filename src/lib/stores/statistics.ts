@@ -15,7 +15,7 @@ function createStatisticsStore() {
     const lastDayOfMonth = new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0);
     const dates = [];
     for (let day = firstDayOfMonth; day <= lastDayOfMonth; day.setDate(day.getDate() + 1)) {
-      const dir = `DailyNote/${format(day, 'yyyy-MM-dd')}/${format(day, 'MM')}`
+      const dir = `DailyNote/${format(day, 'yyyy-MM-dd')}`
       const files = (await FileHelper.listFiles(dir)).length;
       dates.push({
         date: new Date(day),
@@ -32,7 +32,7 @@ function createStatisticsStore() {
     const dates = [];
     for (let day = firstDayOfWeek; day <= lastDayOfWeek; day.setDate(day.getDate() + 1)) {
       const itemDay = new Date(day)
-      const dir = `DailyNote/${format(itemDay, 'yyyy-MM-dd')}/${format(itemDay, 'MM')}`
+      const dir = `DailyNote/${format(itemDay, 'yyyy-MM-dd')}`
       const files = (await FileHelper.listFiles(dir)).length;
       dates.push({
         date: itemDay,

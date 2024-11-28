@@ -13,8 +13,8 @@
     "windows": [
       {
         "title": "memos",
-        "width": 800,
-        "height": 600
+        "width": 360,
+        "height": 740
       }
     ],
     "security": {
